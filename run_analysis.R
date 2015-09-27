@@ -113,7 +113,7 @@ avgBySubjectActivity <- function(inputData) {
   
   subjects <- length(splitBySubject)
   
-  finaldf <- data.frame(stringsAsFactors = FALSE)
+  finaldf <- data.frame(matrix(ncol = 563,nrow = 0),stringsAsFactors = FALSE)
   counter <- 1
   
   for (i in 1:subjects)
@@ -125,11 +125,12 @@ avgBySubjectActivity <- function(inputData) {
      {
         onedf <- splitBySubjectAndActivity[[j]][,1:561]
         oneRow <- colMeans(onedf)
-        finaldf[counter,] <- list(oneRow,splitBySubjectAndActivity[[j]]$subjectid,splitBySubjectAndActivity[[j]]$activity)
-        
+        finaldf[counter,] <- c(oneRow,splitBySubjectAndActivity[[j]]$subjectid,splitBySubjectAndActivity[[j]]$activity)
+        counter <- counter + 1
      }
   }
   
+  colnames(finaldf) <- names(inputData)
   write.table(finaldf, "final-tidy.txt", row.names = FALSE, col.names = TRUE)
-  
+  finaldf
 }
