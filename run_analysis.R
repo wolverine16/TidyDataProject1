@@ -98,7 +98,7 @@ extMeanSDOnly <- function(inputData) {
   ## allcols <- names(inputData)
   meansdCols <- grep("mean|std",names(inputData),value = TRUE)
   
-  meansdData <- inputData[meansdCols,]
+  meansdData <- inputData[,meansdCols]
   
   ## write data to file in mean-sd-data.txt
   write.table(inputData,"mean-sd-data.txt",row.names = FALSE, col.names = TRUE)
@@ -107,8 +107,29 @@ extMeanSDOnly <- function(inputData) {
   
 }
 
-avgBySubjectActivity <- function() {
+avgBySubjectActivity <- function(inputData) {
   
-  "Hello World!!"
+  splitBySubject <- split(inputData,inputData$subjectid)
+  
+  subjects <- length(splitBySubject)
+  
+  finaldf <- data.frame(stringsAsFactors = FALSE)
+  counter <- 1
+  
+  for (i in 1:subjects)
+  {
+     splitBySubjectAndActivity <- split(splitBySubject[[i]],splitBySubject[[i]]$activity)
+     activities <- length(splitBySubjectAndActivity)
+     
+     for (j in 1:activities)
+     {
+        onedf <- splitBySubjectAndActivity[[j]][,1:561]
+        oneRow <- colMeans(onedf)
+        finaldf[counter,] <- list(oneRow,splitBySubjectAndActivity[[j]]$subjectid,splitBySubjectAndActivity[[j]]$activity)
+        
+     }
+  }
+  
+  write.table(finaldf, "final-tidy.txt", row.names = FALSE, col.names = TRUE)
   
 }
