@@ -17,7 +17,8 @@ mrgTestAndTrain <- function() {
   
   activitylabels <- read.table("activity_labels.txt",header = FALSE)
   features <- read.table("features.txt",header = FALSE)
-  featureCols <- paste(features[,1],features[,2],sep = "")
+  featureNames <- fixNames(features[,2])
+  featureCols <- paste(features[,1],featureNames,sep = "")
   
   ## load test data
   subjectsTest <- read.table("subject_test.txt", header = FALSE)
@@ -44,47 +45,33 @@ mrgTestAndTrain <- function() {
   ## write data
   write.table(dfData,"totalData-v1.txt", row.names = FALSE, col.names = TRUE)
   
-  dfData  
-  ## Create Column name vector
-  ## Add Column Vector
-  
-  ## Write tidy Data set to file
+  dfData
   
 }
 
-fixNames <- function(features = x){
+fixNames <- function(inputdata){
     
-    dfChanges <- data.frame(pattern = character(), replacement = character(), stringsAsFactors = FALSE)
-    dfChanges[1,] <- c("-","")
-    dfChanges[2,] <- c("Acc","acceleration")
-    dfChanges[3,] <- c("Mag", "magnitude")
-    dfChanges[4,] <- c("std", "standarddeviation")
-    dfChanges[5,] <- c("mad","medianabsolutedeviation")
-    dfChanges[6,] <- c("max","maximum")
-    dfChanges[7,] <- c("min","minimum")
-    dfChanges[8,] <- c("sma","signalmagnitudearea")
-    dfChanges[9,] <- c("\\()","")
-    dfChanges[10,] <- c("iqr","interquartilerange")
-    dfChanges[11,] <- c("arCoeff","autoregressioncoefficients")
-    dfChanges[12,] <- c(",","to")
+    x <- inputdata
+    x <- gsub("^t","time",x)
+    x <- gsub("^f","frequency",x)
+    x <- gsub("-","",x)
+    x <- gsub("Acc","acceleration",x)
+    x <- gsub("Mag","magnitude",x)
+    x <- gsub("std","standarddeviation",x)
+    x <- gsub("mad","medianabsolutedeviation",x)
+    x <- gsub("max","maximum",x)
+    x <- gsub("min","minimum",x)
+    x <- gsub("sma","signalmagnitudearea",x)
+    x <- gsub("\\()","",x)
+    x <- gsub("iqr","interquartilerange",x)
+    x <- gsub("arCoeffs","autoregressioncoefficients",x)
+    x <- gsub(",","to",x)
     
-    mgsub(dfChanges,x)
-   
+    
+    write.table(x, "CodeBook.md",col.names = FALSE)
+    x
 }
 
-mgsub <- function(dfPatterns, x, ...) {
-  
-  rows <- nrow(dfPatterns)
-  result <- x
-  
-  for (i in 1:rows)
-  {
-      result <- gsub(dfPatterns$pattern[i],dfPatterns$replacement[i],result,...)
-  }
-  
-  result
-  
-}
 ## Function extMeanSDOnly
 ## Assumes the dplyr package is installed
 
@@ -107,13 +94,15 @@ extMeanSDOnly <- function(inputData) {
   
 }
 
+
+
 avgBySubjectActivity <- function(inputData) {
   
   splitBySubject <- split(inputData,inputData$subjectid)
   
   subjects <- length(splitBySubject)
   
-  finaldf <- data.frame(matrix(ncol = 563,nrow = 0),stringsAsFactors = FALSE)
+  finaldf <- as.data.frame(matrix(ncol = 563,nrow = 0))
   counter <- 1
   
   for (i in 1:subjects)
@@ -123,9 +112,11 @@ avgBySubjectActivity <- function(inputData) {
      
      for (j in 1:activities)
      {
+        onesubject <- splitBySubjectAndActivity[[j]]$subjectid[1]
+        oneactivity <- splitBySubjectAndActivity[[j]]$activity[1]
         onedf <- splitBySubjectAndActivity[[j]][,1:561]
         oneRow <- colMeans(onedf)
-        finaldf[counter,] <- c(oneRow,splitBySubjectAndActivity[[j]]$subjectid,splitBySubjectAndActivity[[j]]$activity)
+        finaldf[counter,] <- c(oneRow,onesubject,oneactivity)
         counter <- counter + 1
      }
   }
